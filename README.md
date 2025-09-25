@@ -20,7 +20,7 @@ ___
 کافیه که دستور پایین رو در ترمینال اجرا کنید تا **به‌صورت خودکار نصب و راه‌اندازی شود** :
 
 ```
-sudo bash -c "$(curl -sL https://raw.githubusercontent.com/im-JvD/X-UI_Reminder-Bot/refs/heads/main/installer.sh)"
+sudo bash -c "$(curl -sL https://raw.githubusercontent.com/Ramin-Setoodehnia/X-UI-Bot/main/Installer.sh)"
 ```
 ‌
 1. **نصب و راه‌اندازی** ` BOT `
