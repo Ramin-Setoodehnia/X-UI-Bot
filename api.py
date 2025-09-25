@@ -1,0 +1,71 @@
+import os, time, requests
+from dotenv import load_dotenv
+from pathlib import Path
+
+load_dotenv(dotenv_path=Path(__file__).resolve().parent / ".env")
+
+PANEL_BASE = os.getenv("PANEL_BASE", "").rstrip("/")
+WEBBASEPATH = os.getenv("WEBBASEPATH", "").strip("/")
+if WEBBASEPATH and not WEBBASEPATH.startswith("/"):
+    WEBBASEPATH = "/" + WEBBASEPATH
+
+LOGIN_URL = f"{PANEL_BASE}{WEBBASEPATH}/login"
+INB_LIST = f"{PANEL_BASE}{WEBBASEPATH}/panel/api/inbounds/list"
+ONLINE = f"{PANEL_BASE}{WEBBASEPATH}/panel/api/inbounds/onlines"
+
+print(f"DEBUG: LOGIN_URL = {LOGIN_URL}")
+
+class PanelAPI:
+    def __init__(self, username, password):
+        self.u, self.p = username, password
+        self.s = requests.Session()
+        self.last_login = 0
+
+    def _login(self, force=False):
+        if not force and time.time() - self.last_login < 600:
+            return
+        r = self.s.post(LOGIN_URL, json={"username": self.u, "password": self.p}, timeout=20)
+        r.raise_for_status()
+        if len(self.s.cookies) == 0:
+            raise RuntimeError("Login failed (no cookies received).")
+        self.last_login = time.time()
+
+    def _safe_json(self, response):
+        
+        try:
+            return response.json()
+        except Exception:
+            txt = response.text
+            if len(txt) > 2000:
+                txt = txt[:2000] + "... [truncated]"
+            return {"error": f"❌ Non-JSON response from panel: {txt}"}
+
+    def _extract_obj(self, data):
+        
+        if isinstance(data, dict):
+            if "obj" in data:
+                return data["obj"]
+            
+            if "error" in data:
+                return data
+        return data
+
+    def inbounds(self):
+        self._login()
+        r = self.s.get(INB_LIST, timeout=20)
+        if r.status_code == 401:
+            self._login(force=True)
+            r = self.s.get(INB_LIST, timeout=20)
+        r.raise_for_status()
+        data = self._safe_json(r)
+        return self._extract_obj(data)
+
+    def online_clients(self):
+        self._login()
+        r = self.s.post(ONLINE, timeout=20)
+        if r.status_code == 401:
+            self._login(force=True)
+            r = self.s.post(ONLINE, timeout=20)
+        r.raise_for_status()
+        data = self._safe_json(r)
+        return self._extract_obj(data)
