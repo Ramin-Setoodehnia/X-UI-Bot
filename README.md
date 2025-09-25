@@ -9,7 +9,7 @@
 
 
 <p align="center">
-  <img src="https://github.com/im-JvD/X-UI_Reminder-Bot/blob/main/Picsart_25-09-17_21-28-38-278.jpg" width="1080px" />
+  <img src="https://github.com/Ramin-Setoodehnia/X-UI-Bot/blob/main/Pictures.jpg" width="1080px" />
 </p>
 
 ___
